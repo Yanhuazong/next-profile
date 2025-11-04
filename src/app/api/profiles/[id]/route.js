@@ -1,4 +1,8 @@
-export async function put(request, { params }) {
+  let profiles = [
+    { id: 1, name: "Ava Lee", major: "CS", year: 2, gpa: 3.6 },
+    { id: 2, name: "Ben Park", major: "CGT", year: 3, gpa: 3.2 },
+  ];
+export async function PUT(request, { params }) {
     const newProfile = await request.json();
     const {id} = await params;
     try{
