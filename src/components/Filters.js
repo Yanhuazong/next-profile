@@ -1,7 +1,6 @@
 import Link from "next/link";
-import { memo } from "react"
 
-const Filters = memo(({titles, title, search}) => {
+const Filters = ({titles, title, search}) => {
     
     return (
         <form className="filter-container"  method="GET" action="/">
@@ -22,8 +21,6 @@ const Filters = memo(({titles, title, search}) => {
             <Link href="/">Clear Filters</Link>
         </form>
     )
-})
-
-Filters.displayName = 'Filters';
+}
 
 export default Filters;
