@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-const Filters = ({titles, title, search}) => {
+export default function Filters ({titles, title, search}) {
     
     return (
         <form className="filter-container"  method="GET" action="/">
@@ -23,4 +23,3 @@ const Filters = ({titles, title, search}) => {
     )
 }
 
-export default Filters;
