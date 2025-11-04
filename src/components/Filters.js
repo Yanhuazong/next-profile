@@ -9,7 +9,9 @@ export default function Filters ({titles, title, search}) {
                 <select id="select" defaultValue={title} name="title">
                 <option value="">All</option>
                 {
-                    titles.map(title => <option key={title} value={title}>{title}</option>)
+                    titles.map(function mapTitle(title) {
+                        return <option key={title} value={title}>{title}</option>
+                    })
                 }
                 </select>
             </div>
