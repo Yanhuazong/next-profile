@@ -24,4 +24,6 @@ const Filters = memo(({titles, title, search}) => {
     )
 })
 
+Filters.displayName = 'Filters';
+
 export default Filters;
