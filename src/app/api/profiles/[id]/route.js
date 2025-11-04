@@ -2,6 +2,14 @@
     { id: 1, name: "Ava Lee", major: "CS", year: 2, gpa: 3.6 },
     { id: 2, name: "Ben Park", major: "CGT", year: 3, gpa: 3.2 },
   ];
+  export async function GET(request, { params }) {
+      const {id} = await params;
+      const profile = profiles.find(profile => profile.id === parseInt(id));    
+        if(!profile){
+            return Response.json({error: "Profile not found"}, {status: 404});
+        }
+        return Response.json(profile, {status: 200});
+  }
 export async function PUT(request, { params }) {
     const newProfile = await request.json();
     const {id} = await params;

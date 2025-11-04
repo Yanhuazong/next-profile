@@ -7,24 +7,25 @@ export async function GET(request) {
     const year = searchParams.get("year") || "";
     const name = searchParams.get("name") || "";
     const major = searchParams.get("major") || "";
-  // Fetch data
+  // Fetch data - use a local variable to avoid mutating the global array
+  let filteredProfiles = [...profiles];
 
   if (year) {
-    profiles = profiles.filter(
+    filteredProfiles = filteredProfiles.filter(
       (profile) => profile.year.toString() === year
     );
   }
   if (name) {
-    profiles = profiles.filter(
+    filteredProfiles = filteredProfiles.filter(
       (profile) => profile.name.toLowerCase().includes(name.toLowerCase())
     );
   }
   if (major) {
-    profiles = profiles.filter(
+    filteredProfiles = filteredProfiles.filter(
       (profile) => profile.major.toLowerCase() === major.toLowerCase()
     );
   }
-  return Response.json({ data: profiles }, { status: 200 });
+  return Response.json({ data: filteredProfiles }, { status: 200 });
 }
 export async function POST(request) {
   const newProfile = await request.json();
