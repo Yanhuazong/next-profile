@@ -1,14 +1,16 @@
-  let profiles = [
-    { id: 1, name: "Ava Lee", major: "CS", year: 2, gpa: 3.6 },
-    { id: 2, name: "Ben Park", major: "CGT", year: 3, gpa: 3.2 },
-  ];
+// Use the generated Prisma Client from your configured output path
+// Note: When using a custom Prisma client output, import from the 'client' entry file
+import { PrismaClient } from '@/generated/prisma/client'
+const prisma = new PrismaClient()
+
 export async function GET(request) {
     const searchParams = request.nextUrl.searchParams;
     const year = searchParams.get("year") || "";
     const name = searchParams.get("name") || "";
     const major = searchParams.get("major") || "";
-  // Fetch data - use a local variable to avoid mutating the global array
-  let filteredProfiles = [...profiles];
+ 
+  const students = await prisma.students.findMany();
+  let filteredProfiles = students;
 
   if (year) {
     filteredProfiles = filteredProfiles.filter(
@@ -29,32 +31,53 @@ export async function GET(request) {
 }
 export async function POST(request) {
   const newProfile = await request.json();
-  try{
-    if(!newProfile.name || newProfile.name.trim() === ""){
-      return Response.json({error: "Name is required"}, {status: 400});
-    }else if(!newProfile.major || newProfile.major.trim() === ""){
-      return Response.json({error: "Major is required"}, {status: 400});
-    }else if(!newProfile.year || isNaN(newProfile.year) || (newProfile.year < 1 || newProfile.year > 4)){
-      return Response.json({error: "Valid year is required"}, {status: 400});
-    }else if(!newProfile.gpa || isNaN(newProfile.gpa) || (newProfile.gpa < 0 || newProfile.gpa > 4)){
-      return Response.json({error: "Valid GPA is required"}, {status: 400});
+  try {
+    if (!newProfile.name || newProfile.name.trim() === "") {
+      return Response.json({ error: "Name is required" }, { status: 400 });
+    } else if (!newProfile.major || newProfile.major.trim() === "") {
+      return Response.json({ error: "Major is required" }, { status: 400 });
+    } else if (
+      !newProfile.year ||
+      isNaN(newProfile.year) ||
+      newProfile.year < 1 ||
+      newProfile.year > 4
+    ) {
+      return Response.json({ error: "Valid year is required" }, { status: 400 });
+    } else if (
+      newProfile.gpa === undefined ||
+      newProfile.gpa === null ||
+      isNaN(newProfile.gpa) ||
+      newProfile.gpa < 0 ||
+      newProfile.gpa > 4
+    ) {
+      return Response.json({ error: "Valid GPA is required" }, { status: 400 });
     }
-    const newProfileData = {
-      id: Date.now(),
-      name: newProfile.name.trim(),
-      major: newProfile.major.trim(),
-      year: parseInt(newProfile.year),
-      gpa: parseFloat(newProfile.gpa)
-    };
-    profiles.push(newProfileData);
-    return Response.json(newProfileData, { status: 201 });
-  }catch(error){
-    return Response.json({error: "Invalid data format"}, {status: 400});
+
+    const created = await prisma.students.create({
+      data: {
+        name: newProfile.name.trim(),
+        major: newProfile.major.trim(),
+        year: parseInt(newProfile.year),
+        gpa: parseFloat(newProfile.gpa),
+      },
+    });
+    return Response.json(created, { status: 201 });
+  } catch (error) {
+    return Response.json({ error: "Invalid data format" }, { status: 400 });
   }
 }
 export async function DELETE(request) {
   const searchParams = request.nextUrl.searchParams;
-  const id = searchParams.get("id");
-  profiles = profiles.filter((profile) => profile.id !== parseInt(id));
-  return Response.json({ message: "Profile deleted" }, { status: 200 });
+  const idParam = searchParams.get("id");
+  const id = idParam ? parseInt(idParam) : NaN;
+  if (isNaN(id)) {
+    return Response.json({ error: "Valid id is required" }, { status: 400 });
+  }
+  try {
+    await prisma.students.delete({ where: { id } });
+    return Response.json({ message: "Profile deleted" }, { status: 200 });
+  } catch (e) {
+    // Prisma P2025: Record to delete does not exist.
+    return Response.json({ error: "Profile not found" }, { status: 404 });
+  }
 }
