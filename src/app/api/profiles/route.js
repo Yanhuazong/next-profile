@@ -1,5 +1,6 @@
-// Use the default Prisma Client package (recommended for Vercel)
-import { PrismaClient } from '@prisma/client'
+// Use the generated Prisma Client from your configured output path
+// Note: When using a custom Prisma client output, import from the 'client' entry file
+import { PrismaClient } from '@/generated/prisma/client'
 const prisma = new PrismaClient()
 
 // Ensure this route runs on the Node.js runtime (not Edge),
