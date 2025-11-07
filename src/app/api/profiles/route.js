@@ -3,6 +3,11 @@
 import { PrismaClient } from '@/generated/prisma/client'
 const prisma = new PrismaClient()
 
+// Ensure this route runs on the Node.js runtime (not Edge),
+// so Prisma can use a direct database connection (postgresql://)
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
+
 export async function GET(request) {
     const searchParams = request.nextUrl.searchParams;
     const year = searchParams.get("year") || "";
