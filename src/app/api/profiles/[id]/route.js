@@ -1,52 +1,78 @@
-let profiles = [
-  { id: 1, name: "Ava Lee", major: "CS", year: 2, gpa: 3.6 },
-  { id: 2, name: "Ben Park", major: "CGT", year: 3, gpa: 3.2 },
-];
+import { PrismaClient } from '@/generated/prisma/client'
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
+
+const prisma = new PrismaClient()
+
 export async function GET(request, { params }) {
-  const { id } = await params;
-  const profile = profiles.find((profile) => profile.id === parseInt(id));
-  if (!profile) {
-    return Response.json({ error: "Profile not found" }, { status: 404 });
+  const { id } = await params
+  const parsedId = parseInt(id)
+  if (isNaN(parsedId)) {
+    return Response.json({ error: 'Valid id is required' }, { status: 400 })
   }
-  return Response.json(profile, { status: 200 });
+  const profile = await prisma.students.findUnique({ where: { id: parsedId } })
+  if (!profile) {
+    return Response.json({ error: 'Profile not found' }, { status: 404 })
+  }
+  return Response.json(profile, { status: 200 })
 }
+
 export async function PUT(request, { params }) {
-  const newProfile = await request.json();
-  const { id } = await params;
+  const body = await request.json()
+  const { id } = await params
+  const parsedId = parseInt(id)
+  if (isNaN(parsedId)) {
+    return Response.json({ error: 'Valid id is required' }, { status: 400 })
+  }
   try {
-    if (!newProfile.name || newProfile.name.trim() === "") {
-      return Response.json({ error: "Name is required" }, { status: 400 });
-    } else if (!newProfile.major || newProfile.major.trim() === "") {
-      return Response.json({ error: "Major is required" }, { status: 400 });
+    if (!body.name || body.name.trim() === '') {
+      return Response.json({ error: 'Name is required' }, { status: 400 })
+    } else if (!body.major || body.major.trim() === '') {
+      return Response.json({ error: 'Major is required' }, { status: 400 })
     } else if (
-      !newProfile.year ||
-      isNaN(newProfile.year) ||
-      newProfile.year < 1 ||
-      newProfile.year > 4
+      body.year === undefined ||
+      body.year === null ||
+      isNaN(body.year) ||
+      body.year < 1 ||
+      body.year > 4
     ) {
-      return Response.json(
-        { error: "Valid year is required" },
-        { status: 400 }
-      );
+      return Response.json({ error: 'Valid year is required' }, { status: 400 })
     } else if (
-      !newProfile.gpa ||
-      isNaN(newProfile.gpa) ||
-      newProfile.gpa < 0 ||
-      newProfile.gpa > 4
+      body.gpa === undefined ||
+      body.gpa === null ||
+      isNaN(body.gpa) ||
+      body.gpa < 0 ||
+      body.gpa > 4
     ) {
-      return Response.json({ error: "Valid GPA is required" }, { status: 400 });
+      return Response.json({ error: 'Valid GPA is required' }, { status: 400 })
     }
-    const index = profiles.findIndex((profile) => profile.id === parseInt(id));
-    if (index === -1) {
-      return Response.json({ error: "Profile not found" }, { status: 404 });
-    }
-    profiles[index] = {
-      ...profiles[index],
-      ...newProfile,
-      id: profiles[index].id,
-    };
-    return Response.json(profiles[index], { status: 200 });
+
+    const updated = await prisma.students.update({
+      where: { id: parsedId },
+      data: {
+        name: body.name.trim(),
+        major: body.major.trim(),
+        year: parseInt(body.year),
+        gpa: parseFloat(body.gpa),
+      },
+    })
+    return Response.json(updated, { status: 200 })
   } catch (error) {
-    return Response.json({ error: "Invalid data format" }, { status: 400 });
+    // Prisma P2025: Record to update does not exist
+    return Response.json({ error: 'Profile not found' }, { status: 404 })
+  }
+}
+
+export async function DELETE(request, { params }) {
+  const { id } = await params
+  const parsedId = parseInt(id)
+  if (isNaN(parsedId)) {
+    return Response.json({ error: 'Valid id is required' }, { status: 400 })
+  }
+  try {
+    await prisma.students.delete({ where: { id: parsedId } })
+    return Response.json({ message: 'Profile deleted' }, { status: 200 })
+  } catch (e) {
+    return Response.json({ error: 'Profile not found' }, { status: 404 })
   }
 }

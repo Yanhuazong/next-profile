@@ -1,9 +1,10 @@
 import Link from "next/link";
+import styles from "./Filters.module.css";
 
 export default function Filters ({titles, title, search}) {
     
     return (
-        <form className="filter-container"  method="GET" action="/">
+        <form className={styles.filterContainer} method="GET" action="/">
             <div className="select-filter">
                 <label htmlFor="select">Select a title:</label>
                 <select id="select" defaultValue={title} name="title">

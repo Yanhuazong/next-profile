@@ -1,4 +1,3 @@
-import Image from "next/image";
 import styles from "./page.module.css";
 import Link from "next/link";
 import Filters from "@/components/Filters";
@@ -33,28 +32,43 @@ export default async function Home({ searchParams }) {
   ]);
 console.log("Profiles:", profiles);
   return (
-    <div className={styles.page}>
+
       <main className={styles.main}>
+            <div className="section">
+      <div className="container">
         <h1>Profile App </h1>
         <Filters titles={titles} title={selectedTitle} search={search} />
         {profiles.length === 0 ? (
           <p>No profiles found.</p>
         ) : (
-          profiles.map((profile) => (
-            <Link
-              key={profile.id}
-              href={`/profile/${profile.id}`}
-              className={styles.card}
-            >
-              <div>
-                <h2>{profile.name}</h2>
-                <p>{profile.title}</p>
-                <p>{profile.email}</p>
-              </div>
-            </Link>
-          ))
+          <div className="grid">{
+            profiles.map((profile) => (
+              <Link
+                key={profile.id}
+                href={`/profile/${profile.id}`}
+              >
+                <div className={styles['profile-card']}>
+                  <div className={styles['profile-card__image']}>
+                    <img
+                      src={profile.image_url || "/vercel.svg"}
+                      alt={profile.name}
+                    />
+                  </div>
+                  <div className={styles['profile-card__content']}>
+                    <p>{profile.name}</p>
+                    <p>{profile.title}</p>
+                    <p>{profile.email}</p>
+                  </div>
+                </div>
+              </Link>
+            ))
+          }
+          </div>
         )}
-      </main>
+      
+              </div>
     </div>
+      </main>
+
   );
 }
