@@ -50,7 +50,7 @@ export async function POST(request) {
       return Response.json({ error: "Email is required" }, { status: 400 });
     } else if (!bio || bio.trim() === "") {
       return Response.json({ error: "Bio is required" }, { status: 400 });
-    } else if (imgFile || imgFile.size > 1024 * 1024) {
+    } else if (imgFile && imgFile.size > 1024 * 1024) {
       return Response.json({ error: "Image is required and must be less than 1MB" }, { status: 400 });
     }
 
