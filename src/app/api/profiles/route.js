@@ -1,6 +1,6 @@
-// Use the generated Prisma Client from your configured output path
-// Note: When using a custom Prisma client output, import from the 'client' entry file
 import { PrismaClient } from '@prisma/client'
+import { put } from '@vercel/blob'
+
 const prisma = new PrismaClient()
 
 // Ensure this route runs on the Node.js runtime (not Edge),
@@ -10,79 +10,77 @@ export const dynamic = 'force-dynamic'
 
 export async function GET(request) {
     const searchParams = request.nextUrl.searchParams;
-    const year = searchParams.get("year") || "";
     const name = searchParams.get("name") || "";
-    const major = searchParams.get("major") || "";
- 
-  const students = await prisma.students.findMany();
-  let filteredProfiles = students;
-
-  if (year) {
-    filteredProfiles = filteredProfiles.filter(
-      (profile) => profile.year.toString() === year
-    );
-  }
-  if (name) {
-    filteredProfiles = filteredProfiles.filter(
-      (profile) => profile.name.toLowerCase().includes(name.toLowerCase())
-    );
-  }
-  if (major) {
-    filteredProfiles = filteredProfiles.filter(
-      (profile) => profile.major.toLowerCase() === major.toLowerCase()
-    );
-  }
-  return Response.json({ data: filteredProfiles }, { status: 200 });
-}
-export async function POST(request) {
-  const newProfile = await request.json();
-  try {
-    if (!newProfile.name || newProfile.name.trim() === "") {
-      return Response.json({ error: "Name is required" }, { status: 400 });
-    } else if (!newProfile.major || newProfile.major.trim() === "") {
-      return Response.json({ error: "Major is required" }, { status: 400 });
-    } else if (
-      !newProfile.year ||
-      isNaN(newProfile.year) ||
-      newProfile.year < 1 ||
-      newProfile.year > 4
-    ) {
-      return Response.json({ error: "Valid year is required" }, { status: 400 });
-    } else if (
-      newProfile.gpa === undefined ||
-      newProfile.gpa === null ||
-      isNaN(newProfile.gpa) ||
-      newProfile.gpa < 0 ||
-      newProfile.gpa > 4
-    ) {
-      return Response.json({ error: "Valid GPA is required" }, { status: 400 });
+    const title = searchParams.get("title") || "";
+    const profiles = await prisma.profiles.findMany();
+    let filteredProfiles = profiles;
+    if (name) {
+      filteredProfiles = filteredProfiles.filter(
+        (profile) => profile.name.toLowerCase().includes(name.toLowerCase())
+      );
+    }
+    if (title) {
+      filteredProfiles = filteredProfiles.filter(
+        (profile) => profile.title.toLowerCase().includes(title.toLowerCase())
+      );
     }
 
-    const created = await prisma.students.create({
+    return Response.json({ data: filteredProfiles }, { status: 200 });
+}
+
+
+
+export async function POST(request) {
+  try {
+    const formData = await request.formData();
+    console.log("Form Data Received");
+    
+    const name = formData.get("name");
+    const title = formData.get("title");
+    const email = formData.get("email");
+    const bio = formData.get("bio");
+    const imgFile = formData.get("img");
+    
+    // Validate required fields
+    if (!name || name.trim() === "") {
+      return Response.json({ error: "Name is required" }, { status: 400 });
+    } else if (!title || title.trim() === "") {
+      return Response.json({ error: "Title is required" }, { status: 400 });
+    } else if (!email || email.trim() === "") {
+      return Response.json({ error: "Email is required" }, { status: 400 });
+    } else if (!bio || bio.trim() === "") {
+      return Response.json({ error: "Bio is required" }, { status: 400 });
+    } else if (imgFile || imgFile.size > 1024 * 1024) {
+      return Response.json({ error: "Image is required and must be less than 1MB" }, { status: 400 });
+    }
+
+    // Upload image to Vercel Blob (requires BLOB_READ_WRITE_TOKEN)
+    const blobToken = process.env.BLOB_READ_WRITE_TOKEN;
+    if (!blobToken) {
+      return Response.json({ error: "Blob storage token not configured (BLOB_READ_WRITE_TOKEN)" }, { status: 500 });
+    }
+    const blob = await put(imgFile.name, imgFile, {
+      access: 'public',
+      token: blobToken,
+    });
+
+    // Save profile to database with Blob URL
+    const created = await prisma.profiles.create({
       data: {
-        name: newProfile.name.trim(),
-        major: newProfile.major.trim(),
-        year: parseInt(newProfile.year),
-        gpa: parseFloat(newProfile.gpa),
+        name: name.trim(),
+        title: title.trim(),
+        email: email.trim(),
+        bio: bio.trim(),
+        image_url: blob.url,
       },
     });
-    return Response.json(created, { status: 201 });
+    
+    return Response.json({ data: created }, { status: 201 });
   } catch (error) {
-    return Response.json({ error: "Invalid data format" }, { status: 400 });
+    console.error("Error creating profile:", error);
+    if (error.code === 'P2002') {
+      return Response.json({ error: "Email already exists" }, { status: 400 });
+    }
+    return Response.json({ error: "Failed to create profile" }, { status: 500 });
   }
-}
-export async function DELETE(request) {
-  const searchParams = request.nextUrl.searchParams;
-  const idParam = searchParams.get("id");
-  const id = idParam ? parseInt(idParam) : NaN;
-  if (isNaN(id)) {
-    return Response.json({ error: "Valid id is required" }, { status: 400 });
-  }
-  try {
-    await prisma.students.delete({ where: { id } });
-    return Response.json({ message: "Profile deleted" }, { status: 200 });
-  } catch (e) {
-    // Prisma P2025: Record to delete does not exist.
-    return Response.json({ error: "Profile not found" }, { status: 404 });
-  }
-}
+} 
