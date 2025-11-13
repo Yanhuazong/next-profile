@@ -8,11 +8,11 @@ const prisma = new PrismaClient();
 export const runtime = "nodejs";
 
 async function fetchTitles() {
-  const titles = await prisma.profiles.findMany({
+  const profiles = await prisma.profiles.findMany({
     distinct: ["title"],
     select: { title: true },
   });
-  return titles ? titles.map((t) => t.title) : [];
+  return profiles ? profiles.map((p) => p.title) : [];
 }
 async function getData({ title, search }) {
   const profiles = await prisma.profiles.findMany({
