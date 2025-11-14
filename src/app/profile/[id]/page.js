@@ -19,7 +19,7 @@ export async function generateMetadata({ params }) {
   const profileData = await fetchProfileData(id);
   
   return {
-    title: `${profileData.name}'s Profile`,
+    title: `${profileData.name} Profile`,
     description: `View the profile details of ${profileData.name}. ${profileData.bio || ''}`,
   };
 }
