@@ -29,7 +29,7 @@ export default async function ProfilePage({ params }) {
 
   return (
     <>
-      <h1>{profileData.name}'s Profile</h1>
+      <h1>{profileData.name}&apos;s Profile</h1>
       <div
         style={{
           display: "flex",
