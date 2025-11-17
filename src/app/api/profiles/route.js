@@ -1,8 +1,5 @@
-import { PrismaClient } from '@prisma/client'
 import { put } from '@vercel/blob'
-
-const prisma = new PrismaClient()
-
+import prisma from "@/lib/prisma";
 // Ensure this route runs on the Node.js runtime (not Edge),
 // so Prisma can use a direct database connection (postgresql://)
 export const runtime = 'nodejs'

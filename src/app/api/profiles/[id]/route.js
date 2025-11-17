@@ -1,7 +1,5 @@
-import { PrismaClient } from '@prisma/client';
 import { put } from '@vercel/blob';
-
-const prisma = new PrismaClient();
+import prisma from "@/lib/prisma";
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
