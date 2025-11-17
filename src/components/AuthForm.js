@@ -41,14 +41,13 @@ const AuthForm = () => {
     try {
       if (isLogin) {
         const result = await signIn("credentials", {
-          redirect: false,
+          redirect: true,
+          callbackUrl,
           email,
           password,
         });
-        if (result.error) {
+        if (result?.error) {
           setErrors(result.error);
-        } else {
-          router.push(callbackUrl);
         }
       } else {
         // Registration logic can be added here
@@ -63,14 +62,13 @@ const AuthForm = () => {
         } else {
           // Automatically log in the user after successful registration
           const result = await signIn("credentials", {
-            redirect: false,
+            redirect: true,
+            callbackUrl,
             email,
             password,
           });
-          if (result.error) {
+          if (result?.error) {
             setErrors(result.error);
-          } else {
-            router.push(callbackUrl);
           }
         }
       }
