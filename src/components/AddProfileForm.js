@@ -38,7 +38,7 @@ const AddProfileForm = ({ initialData = {} }) => {
       const file = files[0];
       if (file && file.size < 1024 * 1024) {
         // 1MB limit
-        setValues((prev) => ({ ...prev, img: files[0] }));
+        setValues((prev) => ({ ...prev, img: file }));
       } else {
         setErrors("Image size should be less than 1MB");
       }
